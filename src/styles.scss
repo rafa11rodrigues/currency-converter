@@ -1,0 +1,17 @@
+html, body {
+	background-color: #000089;
+}
+
+html {
+	font-size: 62.5%; // transform default browser 16pt to 10pt
+}
+
+body {
+	font-size: 1.6em;	// transform to 16pt
+}
+
+* {
+	padding: 0;
+	margin: 0;
+	box-sizing: border-box;
+}

@@ -3,7 +3,9 @@
 		<div class="source-value">
 			<md-field class="input">
 				<label>Value to be converted</label>
-				<md-input v-model="valueToBeConverted" type="number" min="0" step="0.01" />
+				<md-input v-model="valueToBeConverted"
+					v-currency="inputConfig"
+					@input="updateInputField()" />
 			</md-field>
 			<md-button class="md-icon-button md-accent" aria-label="clear">
 				<md-icon role="img" aria-label="clear">close</md-icon>
@@ -49,22 +51,24 @@
 		<div class="converted-value">
 			<md-field>
 				<label>Converted value</label>
-				<md-input :value="convertedValue" readonly />
+				<md-input v-model="convertedValue" readonly
+					v-currency="convertedConfig"
+					ref="outputField" />
 			</md-field>
 		</div>
 
 		<div class="details">
 			<p>
 				Exchange rate:
-				<strong>{{ 0 }}</strong>
+				<strong>{{ exchangeRate.toFixed(4) }}</strong>
 			</p>
 			<p>
 				IOF (1.1% of value to be converted):
-				<strong>{{ 0 }}</strong>
+				<strong>{{ iof.toFixed(2) }}</strong>
 			</p>
 			<p>
 				FX (1% of value to be converted):
-				<strong>{{ 0 }}</strong>
+				<strong>{{ fx.toFixed(2) }}</strong>
 			</p>
 		</div>
 
@@ -73,7 +77,7 @@
 				convertedValue = (valueToBeConverted - iof - fx) * exchangeRate
 			</p>
 			<p class="result">
-				{{ convertedValue }} = ({{ valueToBeConverted }} - {{ iof }} - {{ fx }}) * {{ exchangeRate }}
+				{{ parsedOutput.toFixed(4) }} = ({{ parsedInput.toFixed(2) }} - {{ iof.toFixed(2) }} - {{ fx.toFixed(2) }}) * {{ exchangeRate.toFixed(4) }}
 			</p>
 		</div>
 	</div>
@@ -82,42 +86,94 @@
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
 import ButtonsPanel from './ButtonsPanel.vue'
+import { CurrencyDirective, setValue, parse } from 'vue-currency-input';
+import CurrencyConstants from '@/domain/currency/CurrencyConstants';
+import CurrencyService from '@/domain/currency/CurrencyService';
 
 @Component({
 	components: {
 		ButtonsPanel
+	},
+	directives: {
+		currency: CurrencyDirective
 	}
 })
 export default class Conversor extends Vue {
 
-	availableCurrencies = [
-		{ code: 'BRL', description: 'Reais brasileiros', symbol: 'R$' },
-		{ code: 'USD', description: 'American dolars', symbol: 'US$' },
-		{ code: 'EUR', description: 'Euros', symbol: '€' },
-	];
+	availableCurrencies = CurrencyConstants.availableCurrencies;
 
 	convertFrom = this.availableCurrencies[0].code;
 	convertTo = this.availableCurrencies[1].code;
 
-	valueToBeConverted = 0.0;
+	oldValue?: string;
+	valueToBeConverted = "0";
+	convertedValue = "0";
+
+	parsedInput = 0;
+	parsedOutput = 0;
 
 	get availableTargetCurrencies() {
 		return this.availableCurrencies.filter(currency => currency.code !== this.convertFrom);
 	}
 
 	get exchangeRate() {
-		return 0.0;
+		return CurrencyService.exchangeRate(this.convertFrom, this.convertTo);
 	}
+
 	get iof() {
-		return 0.0;
+		return CurrencyService.iofValue(this.parsedInput);
 	}
 
 	get fx() {
-		return 0.0;
+		return CurrencyService.fxValue(this.parsedInput);
 	}
 
-	get convertedValue() {
-		return 0.0;
+	get inputConfig() {
+		return {
+			currency: {
+				prefix: CurrencyConstants.symbols[this.convertFrom]
+			},
+			precision: 2,
+			allowNegative: false,
+			distractionFree: false,
+			autoDecimalMode: true,
+			valueRange: {
+				min: 0
+			}
+		};
+	}
+
+	get convertedConfig() {
+		return {
+			...this.inputConfig,
+			currency: {
+				prefix: CurrencyConstants.symbols[this.convertTo]
+			},
+		};
+	}
+
+
+	convert() {
+		this.parsedInput = parse(this.valueToBeConverted, this.inputConfig) as number;
+		this.parsedOutput = CurrencyService.convert(this.parsedInput, this.convertFrom, this.convertTo);
+		this.updateOutputField();
+	}
+
+	updateInputField() {
+		if (!this.valueToBeConverted) {
+			this.valueToBeConverted = '0';
+		}
+		if (this.oldValue !== this.valueToBeConverted) {
+			this.oldValue = this.valueToBeConverted;
+			this.convert();
+		}
+	}
+
+	updateOutputField() {
+		const field = this.$refs['outputField'] as any;
+		if (field) {
+			setValue(field, this.parsedOutput);
+		}
 	}
 }
 </script>

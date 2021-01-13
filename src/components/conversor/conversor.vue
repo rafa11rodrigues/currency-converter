@@ -5,9 +5,12 @@
 				<label>Value to be converted</label>
 				<md-input v-model="valueToBeConverted"
 					v-currency="inputConfig"
-					@input="updateInputField()" />
+					@input="updateInputField()"
+					@keydown="clearWithEsc($event)"
+					ref="inputField" />
 			</md-field>
-			<md-button class="md-icon-button md-accent" aria-label="clear">
+			<md-button class="md-icon-button md-accent" aria-label="clear"
+				@click="clear()">
 				<md-icon role="img" aria-label="clear">close</md-icon>
 				<md-tooltip md-direction="bottom">Clear</md-tooltip>
 			</md-button>
@@ -17,7 +20,8 @@
 			<div class="from">
 				<span>Convert from</span>
 				<md-field class="input">
-					<md-select v-model="convertFrom" aria-label="convert from">
+					<md-select v-model="convertFrom" aria-label="convert from"
+						@md-selected="changeFrom()">
 						<md-option v-for="currency of availableCurrencies" :key="currency.code"
 							:value="currency.code">
 							{{ currency.description }} - {{ currency.code }}
@@ -29,7 +33,8 @@
 			<div class="to">
 				<span>to</span>
 				<md-field class="input">
-					<md-select v-model="convertTo" aria-label="convert to">
+					<md-select v-model="convertTo" aria-label="convert to"
+						@md-selected="changeTo()">
 						<md-option v-for="currency of availableTargetCurrencies" :key="currency.code"
 							:value="currency.code">
 							{{ currency.description }} - {{ currency.code }}
@@ -38,14 +43,17 @@
 				</md-field>
 			</div>
 
-			<md-button class="md-icon-button md-accent swap" aria-label="swap source and target">
+			<md-button class="md-icon-button md-accent swap" aria-label="swap source and target"
+				@click="swapFromTo()">
 				<md-icon role="img" aria-label="swap source and target">swap_horiz</md-icon>
 				<md-tooltip md-direction="bottom">swap source and target</md-tooltip>
 			</md-button>
 		</div>
 
 		<div class="buttons-panel">
-			<ButtonsPanel />
+			<ButtonsPanel
+				@numberInput="numberInput($event)"
+				@backspace="backspace()" />
 		</div>
 
 		<div class="converted-value">
@@ -105,7 +113,6 @@ export default class Conversor extends Vue {
 	convertFrom = this.availableCurrencies[0].code;
 	convertTo = this.availableCurrencies[1].code;
 
-	oldValue?: string;
 	valueToBeConverted = "0";
 	convertedValue = "0";
 
@@ -117,7 +124,7 @@ export default class Conversor extends Vue {
 	}
 
 	get exchangeRate() {
-		return CurrencyService.exchangeRate(this.convertFrom, this.convertTo);
+		return CurrencyService.exchangeRate(this.convertFrom, this.convertTo) || 0;
 	}
 
 	get iof() {
@@ -154,17 +161,18 @@ export default class Conversor extends Vue {
 
 
 	convert() {
-		this.parsedInput = parse(this.valueToBeConverted, this.inputConfig) as number;
 		this.parsedOutput = CurrencyService.convert(this.parsedInput, this.convertFrom, this.convertTo);
 		this.updateOutputField();
 	}
 
 	updateInputField() {
 		if (!this.valueToBeConverted) {
-			this.valueToBeConverted = '0';
+			this.clear();
 		}
-		if (this.oldValue !== this.valueToBeConverted) {
-			this.oldValue = this.valueToBeConverted;
+		
+		const value = parse(this.valueToBeConverted, this.inputConfig) as number;
+		if (this.parsedInput !== value) {
+			this.parsedInput = value;
 			this.convert();
 		}
 	}
@@ -174,6 +182,59 @@ export default class Conversor extends Vue {
 		if (field) {
 			setValue(field, this.parsedOutput);
 		}
+	}
+
+	changeFrom() {
+		if (this.convertFrom === this.convertTo) {
+			this.convertTo = this.availableTargetCurrencies[0].code;
+		} else {
+			this.convert();
+		}
+	}
+
+	changeTo() {
+		this.convert();
+	}
+
+	swapFromTo() {
+		const convertFrom = this.convertFrom;
+		this.convertFrom = this.convertTo;
+		setTimeout(() => {
+			this.convertTo = convertFrom;
+		}, 10);
+	}
+
+	clear() {
+		const inputField = this.$refs['inputField'] as any;
+		if (inputField) {
+			setValue(inputField, 0);
+			inputField.$el.focus();
+		}
+	}
+
+	clearWithEsc(evt: KeyboardEvent) {
+		if (evt.key === 'Escape') {
+			evt.preventDefault();
+			evt.stopPropagation();
+			this.clear();
+		}
+	}
+
+	numberInput(n: number) {
+		const newValue = (this.parsedInput * 10) + n/100;
+		this.updateInputThroughButtonPanel(newValue);
+	}
+
+	backspace() {
+		const inputAsString = this.parsedInput.toFixed(2);
+		const lastNumberErased = inputAsString.slice(0, inputAsString.length - 1);
+		const newValue = parseFloat(lastNumberErased) / 10;
+		this.updateInputThroughButtonPanel(newValue);
+	}
+
+	updateInputThroughButtonPanel(newValue: number) {
+		const inputField = this.$refs['inputField'] as any;
+		setValue(inputField, newValue);
 	}
 }
 </script>

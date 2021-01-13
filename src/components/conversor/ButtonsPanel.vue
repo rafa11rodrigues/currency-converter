@@ -1,10 +1,12 @@
 <template>
 	<div class="buttons-panel">
-		<md-button class="md-icon-button md-dense md-raised md-primary button" v-for="n of digits" :key="n">
+		<md-button class="md-icon-button md-dense md-raised md-primary button" v-for="n of digits" :key="n"
+			@click="numberInput(n)">
 			{{ n }}
 		</md-button>
-		<md-button class="md-icon-button md-dense md-raised md-primary button">
-			<md-icon>keyboard_backspace</md-icon>
+		<md-button class="md-icon-button md-dense md-raised md-primary button" aria-label="backspace"
+			@click="backspace()">
+			<md-icon role="img" aria-label="backspace">keyboard_backspace</md-icon>
 		</md-button>
 	</div>
 </template>
@@ -16,6 +18,14 @@ import { Vue, Component } from 'vue-property-decorator'
 export default class ButtonsPanel extends Vue {
 
 	digits = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+
+	numberInput(n: number) {
+		this.$emit('numberInput', n);
+	}
+
+	backspace() {
+		this.$emit('backspace');
+	}
 }
 </script>
 

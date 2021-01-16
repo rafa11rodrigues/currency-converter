@@ -1,21 +1,21 @@
 <template>
   <div id="app">
     <header class="title">
-      <h1>Currency Conversor</h1>
+      <h1>Currency Converter</h1>
     </header>
     <main class="content">
-      <Conversor />
+      <Converter />
     </main>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import Conversor from "./components/conversor/conversor.vue";
+import Converter from "./components/converter/Converter.vue";
 
 @Component({
   components: {
-    Conversor,
+    Converter,
   }
 })
 export default class App extends Vue {

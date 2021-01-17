@@ -9,7 +9,8 @@
     "start": "node server.js"
   },
   "engines": {
-    "node": "10.16.2"
+    "node": "10.16.2",
+    "npm": "6.10.3"
   },
   "dependencies": {
     "core-js": "^3.6.5",
@@ -18,7 +19,7 @@
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-currency-input": "^1.22.4",
-    "vue-material": "git+https://github.com/vuematerial/vue-material.git",
+    "vue-material": "^1.0.0-beta-15",
     "vue-property-decorator": "^9.1.2",
     "vue-router": "^3.2.0"
   },

@@ -8,6 +8,9 @@
     "lint": "vue-cli-service lint",
     "start": "node server.js"
   },
+  "engines": {
+    "node": "10.16.2"
+  },
   "dependencies": {
     "core-js": "^3.6.5",
     "express": "^4.17.1",

@@ -1,6 +1,6 @@
 import CurrencyConstants from "@/domain/currency/CurrencyConstants";
 
-export default class CurrencyInputOptions {
+export default class CurrencyFieldOptions {
 	
 	static get(currency: string, precision?: number) {
 		return {

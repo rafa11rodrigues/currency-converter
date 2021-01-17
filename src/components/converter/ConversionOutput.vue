@@ -10,7 +10,7 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import { CurrencyDirective, setValue } from 'vue-currency-input';
-import CurrencyInputOptions from './CurrencyInputOptions';
+import CurrencyFieldOptions from './CurrencyFieldOptions';
 
 @Component({
 	directives: {
@@ -38,7 +38,7 @@ export default class ConversionOutput extends Vue {
 	}
 
 	get fieldConfig() {
-		return CurrencyInputOptions.get(this.convertedTo, this.precision);
+		return CurrencyFieldOptions.get(this.convertedTo, this.precision);
 	}
 
 	@Watch('convertedValue')

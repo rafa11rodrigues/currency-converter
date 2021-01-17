@@ -62,7 +62,7 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { CurrencyDirective, setValue, parse, getValue } from 'vue-currency-input';
 import ButtonsPanel from './ButtonsPanel.vue';
-import CurrencyInputOptions from './CurrencyInputOptions';
+import CurrencyFieldOptions from './CurrencyFieldOptions';
 import CurrencyConstants from "@/domain/currency/CurrencyConstants";
 
 @Component({
@@ -94,7 +94,7 @@ export default class ConversionInput extends Vue {
 	valueToBeConverted = 0;
 	
 	get inputConfig() {
-		return CurrencyInputOptions.get(this.convertFrom, this.precision);
+		return CurrencyFieldOptions.get(this.convertFrom, this.precision);
 	}
 
 	mounted() {
